@@ -6,9 +6,9 @@ import datetime
 #
 conn = psycopg2.connect(
     host="localhost",
-    dbname="postgres",
+    dbname="database",
     user="postgres",
-    password="12345",
+    password="Jexon192005",
     port="5432"
 )
 cur =   conn.cursor()
@@ -90,6 +90,41 @@ def salida_de_autos():
     cur.execute("DELETE FROM autos WHERE id = %s", (id_auto,))
     conn.commit()
     
+def calcular_ganancias():
+    cur.execute("SELECT COUNT(*) FROM historial WHERE hora_salida IS NOT NULL")
+    total_registros = cur.fetchone()[0]
+    ganancias = total_registros * 5
+    return ganancias
+
+def generar_reporte_ganancias():
+    ganancias = calcular_ganancias()
+    print("Ganancias totales hasta la fecha: ${:.2f}".format(ganancias))
+
+def generar_reporte_vehiculos():
+    cur.execute("SELECT marca, COUNT(*) FROM historial GROUP BY marca")
+    vehiculos = cur.fetchall()
+    print("Reporte de Vehículos:")
+    for vehiculo in vehiculos:
+        marca = vehiculo[0]
+        cantidad = vehiculo[1]
+        print("{}: {}".format(marca, cantidad))
+
+def reportes():
+    while True:
+        print("1. Generar Reporte Ganancias")
+        print("2. Generar Reporte de Vehiculos")
+        print("3. Volver al menú principal")
+        opcion = int(input("Ingrese una opcion: "))
+
+        if opcion == 1:
+            generar_reporte_ganancias()
+        elif opcion == 2:
+            generar_reporte_vehiculos()
+        elif opcion == 3:
+            break
+        else:
+            print("Opción incorrecta")
+
 
 #sistema de informes
 def informes():
@@ -111,7 +146,7 @@ def informes():
             print("ID:", auto[0], "\tMarca:", auto[2], "\tColor:", auto[3], "\tHora de ingreso:", auto[4], "\tHora de salida:", auto[5], "\tTiempo total:", auto[6])
             print()
 
-    
+
 
 
     while True:
@@ -134,7 +169,8 @@ def menu():
         print("1. Ingreso de autos")
         print("2. Salida de autos")
         print("3. Reporte de autos")
-        print("4. Salir")
+        print("4. Reportes")
+        print("5. Salir")
         opcion = int(input("Ingrese una opcion: "))
 
         if opcion == 1:
@@ -144,10 +180,13 @@ def menu():
         elif opcion == 3:
             informes()
         elif opcion == 4:
+            reportes()
+        elif opcion == 5:
             break
         else:
             print("Opcion incorrecta")
 menu()
+
 
 conn.commit()
 cur.close()
